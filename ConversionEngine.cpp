@@ -11,7 +11,6 @@
  * */
 
 #include <cmath>
-#include <time.h>
 #include "A_LogNum.h"
 
 // Forward Declarations Here
