@@ -56,20 +56,42 @@ double A_LogNum::getLogval() {
  * Note that d >= 0 from how we call this func
  * */
 fixedtype deltaPlus(fixedtype d) {
-    fixedtype bitshift(1);
-    bitshift = (bitshift >> d);
-    return bitshift;
+    int d_int = (int)(d << FRACBITS); // index LUT by d ("extended" to range over 2^WBITS)
+    fixedtype deltaP_result = dPLUSvals[d_int];
+    return deltaP_result;
 }
 
 fixedtype deltaMinus(fixedtype d) {
-/*  old implementation: shift then multiply
-    fixedtype bitshift(1.5);
-    bitshift = -1*(bitshift >> d);
-*/
+    int d_int = (int)(d << FRACBITS); // index LUT by d ("extended" to range over 2^WBITS)
+    fixedtype deltaP_result = dMINUSvals[d_int];
+    return deltaP_result;
+}
 
-// new implementation: start at -1.5, then shift
-    fixedtype bitshift(-1.5);
-    bitshift = (bitshift >> d);
-    // need to 'OR' mask to set MSB == '1' to preserve arithmetic shift
-    return (bitshift | MIN_VAL);
+
+// get the index on delta tables corresponding to this value of d
+// does it matter if we use array vs. map & key, CAM vs BRAM?
+int getIndex(fixedtype) {
+    return (0);
+}
+
+// how do we make sure this gets executed exactly once, and before deltaPlus()?
+// also, need to know how to index into this (vals[0] refers to vals[1000.0000]
+//                                            vals[1] refers to vals[1000.0001]  )
+//  OR...
+//          we could design it so that vals[0] refers to vals[0000.0000]
+//                                     vals[1] refers to vals[0000.0001]
+// OR something
+// just need to find a cast that will never over/underflow when we get
+// d as a fixedtype, and must convert it to an int to index the (ROM?) thingy
+void arrayInit() {
+    fixedtype base(MIN_VAL);
+    for (int i = 0; i < TABLEROWS; ++i) {
+        double dp,dm;
+        double d = (double)(base);
+        dp = log2(1+pow(2,-d));
+        dm = log2(1-pow(2,-d));
+        dPLUSvals[i] = fixedtype(dp);
+        dMINUSvals[i] = fixedtype(dm);
+        base += RESOLUTION;
+    }
 }
