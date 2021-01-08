@@ -81,5 +81,5 @@ double getlogval(T item) {
 
 template<typename T>
 A_LogNum toLogNum(T realnum) {
-    return lognum(getSign(realnum),getlogval(realnum));
+    return A_LogNum(getSign(realnum),getlogval(realnum));
 }

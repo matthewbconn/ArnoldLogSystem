@@ -34,7 +34,11 @@ A_LogNum A_LogNum::multiplyReals(A_LogNum v1, A_LogNum v2) {
     return A_LogNum(! (v1.signBit xor v2.signBit), v1.logval + v2.logval);
 }
 
+/*
+ * Top level function for synthesis - array init lives here for this reason
+ */
 void A_LogNum::MAC(A_LogNum A, A_LogNum B) {
+    arrayInit();
     A_LogNum mult = multiplyReals(A,B);
     (*this)=(addReals(*this,mult));
 }
@@ -56,22 +60,24 @@ double A_LogNum::getLogval() {
  * Note that d >= 0 from how we call this func
  * */
 fixedtype deltaPlus(fixedtype d) {
-    int d_int = (int)(d << FRACBITS); // index LUT by d ("extended" to range over 2^WBITS)
+    int d_int = getIndex(d);
     fixedtype deltaP_result = dPLUSvals[d_int];
     return deltaP_result;
 }
 
 fixedtype deltaMinus(fixedtype d) {
-    int d_int = (int)(d << FRACBITS); // index LUT by d ("extended" to range over 2^WBITS)
-    fixedtype deltaP_result = dMINUSvals[d_int];
-    return deltaP_result;
+    int d_int = getIndex(d);
+    fixedtype deltaM_result = dMINUSvals[d_int];
+    return deltaM_result;
 }
 
 
 // get the index on delta tables corresponding to this value of d
 // does it matter if we use array vs. map & key, CAM vs BRAM?
-int getIndex(fixedtype) {
-    return (0);
+uint32_t getIndex(fixedtype d) {
+    int x = (((fixedtype2)(d)) << FRACBITS);
+    x += OFFSET;
+    return (x);
 }
 
 // how do we make sure this gets executed exactly once, and before deltaPlus()?
